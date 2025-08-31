@@ -1,0 +1,73 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 26,
+    "patch": 4
+  },
+  "configurePresets": [
+    {
+      "name": "config-base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      }
+    },
+    {
+      "name": "config-MSVC",
+      "hidden": true,
+      "inherits": "config-base",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_CXX_COMPILER": "cl.exe",
+        "USE_CUDA": "ON"
+      }
+
+    },
+    {
+      "name": "debug",
+      "hidden": true,
+      "inherits": "config-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "inherits": "config-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "MSVCDebug",
+      "inherits": [
+        "config-MSVC",
+        "debug"
+      ]
+    },
+    {
+      "name": "MSVCRelease",
+      "inherits": [
+        "config-MSVC",
+        "release"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "MSVCDebugExercice",
+      "configurePreset": "MSVCDebug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "MSVCReleaseExercice",
+      "configurePreset": "MSVCRelease",
+      "configuration": "Release"
+    }
+  ]
+}
