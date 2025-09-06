@@ -12,6 +12,7 @@ public:
 	{
 		m_stars.push_back(star);
 	}
+	virtual ~LastTreeNode() override = default;
 	void reset(const Bbox& bbox) override { m_stars.clear(); };
 	void startInserting() override {};
 	void endInserting() override {};

@@ -10,6 +10,7 @@ struct GenParam
     DistanceLy min, max;
 
     SpeedScalarLyY minSpeed, maxSpeed;
+    PosLy center{};
 };
 
 

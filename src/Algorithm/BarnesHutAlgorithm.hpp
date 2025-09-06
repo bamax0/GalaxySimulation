@@ -9,7 +9,7 @@ namespace GalaxySim
 	public:
 		BarnesHutAlgorithm(ITreeNode* rootNode) : m_rootNode(rootNode) {}
 
-		~BarnesHutAlgorithm() { delete m_rootNode; };
+		virtual ~BarnesHutAlgorithm() override { delete m_rootNode; };
 
 		void init(const std::vector<Star>& stars) override;
 

@@ -9,7 +9,7 @@ namespace GalaxySim
 	public:
 		CpuSimpleAlgorithm() : AlgorithmInterface() {};
 
-		~CpuSimpleAlgorithm() override = default;
+		virtual ~CpuSimpleAlgorithm() override = default;
 
 		void init(const std::vector<Star>& stars) override;
 

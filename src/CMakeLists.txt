@@ -22,6 +22,7 @@ add_library(${LIB_NAME} SHARED
     "Algorithm/Nodes/LastTreeNode.hpp"
     "Algorithm/Nodes/LastTreeNodeUsingCuda.cu"
     "Algorithm/Nodes/LastTreeNodeUsingCuda.hpp"
+    "Algorithm/Nodes/CudaLastTreeNode.cu"
     "Algorithm/Nodes/CudaLastTreeNode.hpp"
     "Algorithm/Nodes/TreeNode.hpp"
     "Algorithm/Nodes/OctreeNode.hpp"
@@ -48,6 +49,8 @@ add_library(${LIB_NAME} SHARED
     ###
     "Render/ImageGen.hpp"
     "Render/ImageGen.cpp"
+    "Render/ProbabilityComputer.cpp"
+    "Render/ProbabilityComputer.hpp"
 
     "Utils/chrono.hpp"
  "Algorithm/CudaBarnesHutAlgorithm.cu")

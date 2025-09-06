@@ -26,7 +26,7 @@ static constexpr double REDUCED_G = G / (LIGHT_YEAR*LIGHT_YEAR*LIGHT_YEAR) * SOL
 static constexpr float REDUCED_Gf = static_cast<float>(REDUCED_G); //  Ly3 Sm-1 Y-2
 static constexpr float INVERT_LIGTH_SPEED_SQUAREDf = static_cast<float>(INVERT_LIGTH_SPEED_SQUARED); //  Ly3 Sm-1 Y-2
 
-static constexpr float softening = 5.; // static_cast<float>(ASTRONOMICAL_UNIT / LIGHT_YEAR * 10000);
+static constexpr float softening = 15.; // static_cast<float>(ASTRONOMICAL_UNIT / LIGHT_YEAR * 10000);
 static constexpr float softening2 = softening *softening;
 
 static constexpr float fPI = 3.14159265358979323846f;

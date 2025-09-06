@@ -10,7 +10,7 @@ namespace GalaxySim
 	public:
 		CudaSimpleAlgorithm() : AlgorithmInterface() {};
 
-		~CudaSimpleAlgorithm() override;
+		virtual ~CudaSimpleAlgorithm() override;
 
 		void initWithGPU(size_t nbStars, Star* stars);
 

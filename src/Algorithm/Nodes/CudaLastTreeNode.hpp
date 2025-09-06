@@ -40,6 +40,7 @@ struct CudaLastTreeNodeFlat
 			r = Vec3::distance(node->starPos, star.position);
 			force += computeForce(star.position, star.mass, node->starPos, node->starMass, r);
 		}
+		// printf("%.3f \n", force.length());
 		return force;
 	}
 };
@@ -48,34 +49,22 @@ struct CudaLastTreeNodeFlat
 class GALAXY_SIM_DLL_EXPORT CudaLastTreeNode : public ITreeNode
 {
 public:
-	~CudaLastTreeNode()
+
+
+	CudaLastTreeNode(
+		std::shared_ptr<std::mutex> mutex,
+		std::shared_ptr<std::vector<CudaLastTreeNodeFlat>> nodes, 
+		const Vec3& starPos, MassMs mass);
+
+	virtual ~CudaLastTreeNode() override
 	{
 		reset({});
 	}
-
 	virtual void reset(const Bbox& bbox) override {/*A voir si utile*/ }
-
-	CudaLastTreeNode(
-		std::shared_ptr<std::mutex> mutex, 
-		std::shared_ptr<std::vector<CudaLastTreeNodeFlat>> nodes, const Vec3& starPos, MassMs mass)
-		: m_nodes(nodes), m_mutex(mutex)
-	{
-		std::lock_guard<std::mutex> lock(*m_mutex.get());
-		m_nodeLastIdx = m_nodes->size();
-		m_nodeFirstIdx = m_nodeLastIdx;
-		m_nodes->push_back(CudaLastTreeNodeFlat{ starPos, mass});
-	}
 
 	void startInserting() override {};
 	void endInserting() override {};
-	void appendStar(const Star& star, size_t depth = 0) override
-	{
-		std::lock_guard<std::mutex> lock(*m_mutex.get());
-		CudaLastTreeNodeFlat& node = m_nodes->at(m_nodeLastIdx);
-		m_nodeLastIdx = m_nodes->size();
-		node.childIdx = m_nodeLastIdx;
-		m_nodes->push_back(CudaLastTreeNodeFlat{ star.position, star.mass });
-	}
+	void appendStar(const Star& star, size_t depth = 0) override;
 
 	Vec3 computeTotalForce(const Star& star) const override { return Vec3(); } 
 

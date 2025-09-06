@@ -7,6 +7,7 @@ class SedecTreeNode : public TreeNode<64>
 public:
 	SedecTreeNode(const Bbox& bbox) : TreeNode<64>(bbox) {}
 	SedecTreeNode(const Bbox& bbox, const PosLy& pos, MassMs mass) : TreeNode<64>(bbox, pos, mass) {}
+	virtual ~SedecTreeNode() override = default;
 protected:
 
 	virtual unsigned char getIndex(const PosLy& pos) const override

@@ -6,6 +6,7 @@ class GALAXY_SIM_DLL_EXPORT OctreeNode : public TreeNode<8>
 public:
 	OctreeNode(const Bbox& bbox) : TreeNode<8>(bbox) {}
 	OctreeNode(const Bbox& bbox, const PosLy& pos, MassMs mass) : TreeNode<8>(bbox, pos, mass) {}
+	virtual ~OctreeNode() override = default;
 protected:
 
 	unsigned char getIndex(const PosLy& pos) const override

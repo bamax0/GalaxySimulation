@@ -5,13 +5,12 @@ OctreePtr CudaTreeNode::createCudaPtr() const
 {
 	CudaTreeNodeFlat* nodesCuda;
 	size_t sizeOfMem = m_nodes->size() * sizeof(CudaTreeNodeFlat);
-	//std::cout << "Cb nodes de l'octree cuda: " << m_nodes->size() << std::endl;
 	cudaMalloc((void**)&nodesCuda, sizeOfMem);
 	cudaMemcpy(nodesCuda, m_nodes->data(), sizeOfMem, cudaMemcpyHostToDevice);
 
 	size_t sizeOfMemLastNode = m_lastNodes->size() * sizeof(CudaLastTreeNodeFlat);
 	CudaLastTreeNodeFlat* lastNodesCuda;
-	//std::cout << "Cb dernier  nodes de l'octree cuda: " << m_lastNodes->size() << std::endl;
+	// std::cout << "LastNode:  " << m_lastNodes->size() << " node: " << m_nodes->size() << std::endl;
 	cudaMalloc((void**)&lastNodesCuda, sizeOfMemLastNode);
 	cudaMemcpy(lastNodesCuda, m_lastNodes->data(), sizeOfMemLastNode, cudaMemcpyHostToDevice);
 	return OctreePtr{nodesCuda, lastNodesCuda };
@@ -19,12 +18,14 @@ OctreePtr CudaTreeNode::createCudaPtr() const
 
 void CudaTreeNode::reset(const Bbox& bbox)
 {
-	SimplifiedTreeNode<8>::reset(bbox);
 	m_nodeIdx =  0u;
 	m_nodes->clear();
 	m_nodes->push_back(
 		CudaTreeNodeFlat{ PosLy(), 0.f, m_bbox.size * 2.f / s_theta }
 	);
+	SimplifiedTreeNode<8>::reset(bbox);
+	m_lastNodes->clear();
+	m_lastNodes->push_back({});
 }
 
 unsigned char CudaTreeNode::getIndex(const PosLy& pos) const
@@ -79,5 +80,25 @@ ITreeNode* CudaTreeNode::createLastTreeNode(const PosLy& pos, MassMs mass, unsig
 
 	std::lock_guard<std::mutex> lock(*m_mutex.get());
 	m_nodes->at(m_nodeIdx).setChildIdx(idx, childIdx);
+	printf("creation lastNode idxP = %i | idxC = %i\n", m_nodeIdx, childIdx);
 	return lastNode;
+}
+
+bool CudaTreeNode::fillIndex(std::set<size_t>& idxVec) const
+{
+	if (idxVec.find(m_nodeIdx) == idxVec.end())
+	{
+		idxVec.insert(m_nodeIdx);
+		for (unsigned short i{ 0u }; i < 8u; ++i)
+		{
+			const CudaTreeNode* c = dynamic_cast<const CudaTreeNode*>(getChild(i));
+			if (c != nullptr)
+			{
+				if (!c->fillIndex(idxVec)) return false;
+			}
+		}
+
+		return true;
+	}
+	return false;
 }

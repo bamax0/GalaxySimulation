@@ -14,7 +14,7 @@ class GALAXY_SIM_DLL_EXPORT FirstTreeNode : public ITreeNode
 	};
 public:
 	FirstTreeNode(SimplifiedTreeNode<N>* treeNode) : ITreeNode(), m_rootNode(treeNode) {}
-	~FirstTreeNode() { delete m_rootNode; }
+	virtual ~FirstTreeNode() override { delete m_rootNode; }
 
 	FirstTreeNode(const FirstTreeNode&) = delete;
 	FirstTreeNode& operator=(const FirstTreeNode&) = delete;
@@ -30,6 +30,11 @@ public:
 	Vec3 computeTotalForce(const Star& star) const override
 	{
 		return m_rootNode->computeTotalForce(star);
+	}
+
+	SimplifiedTreeNode<N>* getRoot()
+	{
+		return m_rootNode;
 	}
 
 private:

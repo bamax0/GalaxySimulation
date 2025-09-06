@@ -30,7 +30,6 @@ struct CudaTreeNodeFlat
 	int64_t c5{0};
 	int64_t c6{0};
 	int64_t c7{0};
-
 	__device__ __host__ __inline__ int64_t getChildIdx(unsigned char i) const
 	{
 		if (i == 0u)
@@ -64,7 +63,7 @@ struct CudaTreeNodeFlat
 		return c7;
 	}
 
-	__device__ __host__ __inline__ void setChildIdx(unsigned char i, int64_t childIdx)
+	void setChildIdx(unsigned char i, int64_t childIdx)
 	{
 		if (i == 0u)
 		{
@@ -105,8 +104,7 @@ struct CudaTreeNodeFlat
 		return;
 	}
 
-
-	__device__ __host__ __inline__ Vec3 computeTotalForce(const OctreePtr octreeNodes, const Star star, int stack = 0) const
+	__device__ __host__ __inline__ Vec3 computeTotalForce(const OctreePtr octreeNodes, const Star star, int stack) const
 	{
 		//printf("stack = %i\n", stack);
 
@@ -114,18 +112,18 @@ struct CudaTreeNodeFlat
 			return  { 0, 0, 0 };
 
 		float r = Vec3::distance(centerOfMass, star.position);
-		
-		bool a = barnesHutCst  < r;
-		if (a) 
+
+		bool a = barnesHutCst < r;
+		if (a)
 		{
 			// printf("----------- Fin calcule radius: %.1f < %.1f = %f  || stack = %i\n",
 			// 	barnesHutCst, r, a ? 1.f : 0.f, stack);
 			return computeForce(star.position, star.mass, centerOfMass, mass, r);
 		}
 
-		bool hasChild{false};
+		bool hasChild{ false };
 		Vec3 force{ 0.f, 0.f, 0.f };
-		for (unsigned char  i{0u}; i<8u; ++i)
+		for (unsigned char i{ 0u }; i < 8u; ++i)
 		{
 			int64_t  childIdx = getChildIdx(i);
 			if (childIdx > 0)
@@ -139,7 +137,7 @@ struct CudaTreeNodeFlat
 				hasChild = true;
 			}
 		}
-		if(!hasChild) return computeForce(star.position, star.mass, centerOfMass, mass, r);
+		if (!hasChild) return computeForce(star.position, star.mass, centerOfMass, mass, r);
 		return force;
 	}
 
@@ -180,23 +178,26 @@ struct CudaTreeNodeFlat
 				int64_t  childIdx = currNode->getChildIdx(i);
 				if (childIdx > 0)
 				{
+					// printf("Node %i\n", childIdx);
 					stack[stackIndex] = &octreeNodes.nodes[childIdx];
 					++stackIndex;
 					hasChild = true;
 				}
 				else if (childIdx < 0)
 				{
-					force += octreeNodes.lastNodes[-1-childIdx].computeTotalForceWithoutRec(octreeNodes.lastNodes, star);
+					printf("LastNode %i\n", -1 - childIdx);
+					force += octreeNodes.lastNodes[-1 - childIdx].computeTotalForceWithoutRec(octreeNodes.lastNodes, star);
 					hasChild = true;
 				}
 			}
-			if (!hasChild) 
+			if (!hasChild)
 			{
 				force += computeForce(star.position, star.mass, currNode->centerOfMass, currNode->mass, r);
 			}
 		}
 		return force;
 	}
+
 
 };
 
@@ -209,14 +210,15 @@ public:
 		: SimplifiedTreeNode<8>(bbox),
 		m_mutex( std::make_shared<std::mutex>() ),
 		m_nodes(std::make_shared<std::vector<CudaTreeNodeFlat>>(
-			std::vector<CudaTreeNodeFlat>{CudaTreeNodeFlat{}})),
+			std::vector<CudaTreeNodeFlat>{ CudaTreeNodeFlat{ PosLy(), 0.f, m_bbox.size * 2.f / s_theta } })
+		),
 		m_lastNodes(std::make_shared<std::vector<CudaLastTreeNodeFlat>>(
-			std::vector<CudaLastTreeNodeFlat>{})),
+			std::vector<CudaLastTreeNodeFlat>{} )),
 		m_nodeIdx{0u}
 	{
 	}
 
-	~CudaTreeNode()
+	virtual ~CudaTreeNode() override
 	{
 		reset({});
 	}
@@ -246,24 +248,7 @@ public:
 	}
 
 	OctreePtr createCudaPtr() const;
-	bool fillIndex(std::set<size_t>& idxVec) const
-	{
-		if (idxVec.find(m_nodeIdx) == idxVec.end())
-		{
-			idxVec.insert(m_nodeIdx);
-			for (unsigned short i{ 0u }; i < 8u; ++i)
-			{
-				const CudaTreeNode* c = dynamic_cast<const CudaTreeNode*>(getChild(i));
-				if (c != nullptr)
-				{
-					if (!c->fillIndex(idxVec)) return false;
-				}
-			}
-
-			return true;
-		}
-		return false;
-	}
+	bool fillIndex(std::set<size_t>& idxVec) const;
 
 	using SimplifiedTreeNode<8>::startInserting;
 	using SimplifiedTreeNode<8>::endInserting;

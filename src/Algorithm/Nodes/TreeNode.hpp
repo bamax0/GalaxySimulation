@@ -10,7 +10,7 @@ public:
 	static float s_theta;
 
 	SimplifiedTreeNode(const Bbox& bbox);
-	~SimplifiedTreeNode();
+	virtual ~SimplifiedTreeNode() override;
 	virtual void reset(const Bbox& bbox) override;
 
 	virtual void startInserting() override {};
@@ -44,7 +44,7 @@ protected:
 	Bbox m_bbox;
 	size_t m_nbStar;
 
-	static constexpr DistanceLy k_minBboxSize{ 8.f };
+	static constexpr DistanceLy k_minBboxSize{ 5.f };
 };
 
 template<unsigned char N>
@@ -101,15 +101,14 @@ inline void SimplifiedTreeNode<N>::appendStar(const Star& star, size_t depth)
 		}
 		else {
 			// Il n'y avais aucun enfant avant, on peux donc créer le moeud sans vérification
-			auto c = createChild(getSubBbox(idx0), getCenterOfMass(), getMass(), idx0);
-			m_childs.at(idx0) = c;
+			m_childs.at(idx0) = createChild(getSubBbox(idx0), getCenterOfMass(), getMass(), idx0);
 		}
 	}
 	float newMass = getMass() + star.mass;
 	update((getCenterOfMass() * getMass() + star.position * star.mass) / newMass, newMass);
 
 	size_t idx = getIndex(star.position);
-	ITreeNode* child = m_childs.at(idx);
+	ITreeNode* child{ m_childs.at(idx)};
 	if (child == nullptr)
 	{
 		if (m_bbox.size < k_minBboxSize)
@@ -181,7 +180,7 @@ class GALAXY_SIM_DLL_EXPORT TreeNode : public SimplifiedTreeNode<N>
 public:
 	TreeNode(const Bbox& bbox);
 	TreeNode(const Bbox& bbox, const PosLy& pos, MassMs mass);
-	~TreeNode() = default;
+	virtual ~TreeNode() override = default;
 
 	using SimplifiedTreeNode<N>::reset;
 	using SimplifiedTreeNode<N>::startInserting;

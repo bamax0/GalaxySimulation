@@ -48,14 +48,15 @@ namespace GalaxySim
 		//auto start = std::chrono::steady_clock::now();
 		m_firstNode->reset(computeBbox());
 
-		m_firstNode->startInserting();
 		std::vector<Star> stars = getStars();
+		m_firstNode->startInserting();
 		for (const Star& star : stars)
 		{
 			m_firstNode->appendStar(star);
 		}
 		m_firstNode->endInserting();
-		stars.clear(); // Libération de la mémoire
+		// 
+		// stars.clear(); // Libération de la mémoire
 
 		// std::set<size_t> idxVec;
 		// std::cout << "Check des indices : " << m_rootNode->fillIndex(idxVec) << std::endl;
@@ -65,17 +66,16 @@ namespace GalaxySim
 		// // Store the time difference between start and end
 		// auto diff = end - start;
 		// std::cout << "Init de l'arbe: " << std::chrono::duration<double, std::milli>(diff).count() << " ms" << std::endl;
-
-
-
 		// start = std::chrono::steady_clock::now();
+
+
 		OctreePtr flattenOctree = m_rootNode->createCudaPtr();
 
 		cudaError_t err1 = cudaGetLastError();
 		if (err1 != cudaSuccess) {
 			printf("Kernel launch failed1: %s\n", cudaGetErrorString(err1));
 		}
-		m_firstNode->reset({}); //	Libération de la mémoire
+		// m_firstNode->reset({}); //	Libération de la mémoire
 
 		int threadsPerBlock = 128;
 		int blocksPerGrid = (m_nbStars + threadsPerBlock - 1) / threadsPerBlock;
@@ -85,6 +85,8 @@ namespace GalaxySim
 
 		cudaFree(flattenOctree.nodes);
 		cudaFree(flattenOctree.lastNodes);
+		flattenOctree.nodes = nullptr;
+		flattenOctree.lastNodes = nullptr;
 
 		cudaError_t err2 = cudaGetLastError();
 		if (err2 != cudaSuccess) {
@@ -92,6 +94,7 @@ namespace GalaxySim
 		}
 		// std::cout << "Début mise a jour possition" << std::endl;
 		CudaBarnesHut::updatePositions<<<blocksPerGrid, threadsPerBlock>>>(m_gpuStarsPtr, m_nbStars, dt, m_gpuForcesPtr);
+		cudaDeviceSynchronize();
 
 		cudaError_t err3 = cudaGetLastError();
 		if (err3 != cudaSuccess) {

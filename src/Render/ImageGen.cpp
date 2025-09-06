@@ -7,7 +7,7 @@
 #include "../../external/opencv/build/include/opencv2/imgproc.hpp"
 #include "../../external/opencv/build/include/opencv2/core/mat.hpp"
 #include "../../external/opencv/build/include/opencv2/videoio/videoio.hpp"
-#include "../../external/opencv/sources/modules/core/include/opencv2/core/matx.hpp"
+#include "ProbabilityComputer.hpp"
 
 static double getTemperatureFromMas(double m) // m en solar mass
 {
@@ -64,7 +64,7 @@ void ImageGen::reinit()
 	if (m_cap != nullptr) delete m_cap;
 	m_cap = new cv::VideoWriter();
 	int codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
-	m_cap->open(imgPath, codec, 20, cv::Size{ img_size , img_size }, true);
+	m_cap->open(imgPath, codec, 20, cv::Size{ k_imgSize , k_imgSize }, true);
 	if (!m_cap->isOpened())
 	{
 		std::cout << "Error, video non ouverte" << std::endl;
@@ -85,11 +85,11 @@ void ImageGen::init(const std::filesystem::path& parentFolder)
 
 void ImageGen::drawPixel(cv::Mat* val, const double& xr, const double& yr, double mass) const
 {
-	size_t x = size_t(xr) + img_size / 2;
-	size_t y = size_t(yr) + img_size / 2;
+	size_t x = size_t(xr) + k_imgSize / 2;
+	size_t y = size_t(yr) + k_imgSize / 2;
 	if (
-		x < img_size && x >= 0 &&
-		y < img_size && y >= 0
+		x < k_imgSize && x >= 0 &&
+		y < k_imgSize && y >= 0
 		)
 	{
 		auto c  = colorTemperatureToRGB(getTemperatureFromMas(mass));
@@ -100,14 +100,15 @@ void ImageGen::drawPixel(cv::Mat* val, const double& xr, const double& yr, doubl
 
 void ImageGen::generateImg(const std::vector<Star>& starVec, const dVec3& camPos, const double& posMax2, size_t i)
 {
-	cv::Mat val = cv::Mat::zeros(img_size, img_size, CV_8UC3);
-	float rap = static_cast<float>(img_size) / static_cast<float>(posMax2);
-	for (const Star& star : starVec)
-	{
-		Vec3 pos = star.position;
-		auto newPos = pos * rap;
-		drawPixel(&val, newPos.x, newPos.y, star.mass);
-	}
+	cv::Mat val = cv::Mat::zeros(k_imgSize, k_imgSize, CV_8UC3);
+
+	m_computer.fillImage(&val, starVec, posMax2);
+	// float rap = static_cast<float>(k_imgSize) / static_cast<float>(posMax2);
+	// for (const Star& star : starVec)
+	// {
+	// 	auto newPos = star.position * rap;
+	// 	drawPixel(&val, newPos.x, newPos.y, star.mass);
+	// }
 	cv::Mat blurred;
 	// cv::GaussianBlur(val, blurred, { 3, 3 }, 2.5);
 

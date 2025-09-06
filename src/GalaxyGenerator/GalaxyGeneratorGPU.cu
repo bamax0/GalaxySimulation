@@ -46,7 +46,7 @@ __global__ void generateStarsPlummerGPU(const size_t nbStars, const GenParam par
 
     // https://stackoverflow.com/questions/28434765/how-to-randomly-distribute-n-masses-such-that-they-follow-a-plummer-density-dis
     float a = 1.f / 12.f;
-    float mM = randomNumber(&state, 0.3, 0.99); // Proportion de mass entre l'etoile et le centre de la galaxy
+    float mM = randomNumber(&state, 0.2, 0.99); // Proportion de mass entre l'etoile et le centre de la galaxy
     float radius = param.max * a / std::sqrt(std::pow(mM, -2.0f / 3.0f) - 1.f);
 
     float theta = randomNumber(&state, 0.f, 2.00001f * fPI);
@@ -55,10 +55,10 @@ __global__ void generateStarsPlummerGPU(const size_t nbStars, const GenParam par
     float rSpeed = param.maxSpeed * std::sqrt(REDUCED_Gf * massInside / radius);
 
     Star s;
-    s.position = { radius * std::cos(theta), radius * std::sin(theta), 0.f };
+    s.position = param.center + PosLy{ radius * std::cos(theta), radius * std::sin(theta), 0.f };
     s.speed = { -rSpeed * std::sin(theta), rSpeed * std::cos(theta), 0.f };
     s.acceleration = { 0.f, 0.f, 0.f };
-    s.mass = randomNumber(&state, starMass * 0.0001f, starMass * 1.999);
+    s.mass = randomNumber(&state, starMass * 0.0001f, starMass * 1.9999f);
     stars[id] = s;
 }
 

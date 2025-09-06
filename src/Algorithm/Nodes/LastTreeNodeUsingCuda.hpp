@@ -14,7 +14,7 @@ public:
 		m_stars.push_back(star);
 	}
 	
-	~LastTreeNodeUsingCuda()
+	virtual ~LastTreeNodeUsingCuda() override
 	{
 		reset({});
 	}

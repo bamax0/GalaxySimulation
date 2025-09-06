@@ -10,7 +10,7 @@ namespace GalaxySim
 	public:
 		CudaGFieldAlgorithm(size_t fieldSize) : AlgorithmInterface(), m_fieldSize(fieldSize){};
 
-		~CudaGFieldAlgorithm() override;
+		virtual ~CudaGFieldAlgorithm() override;
 
 		void initWithGPU(size_t nbStars, Star* stars);
 

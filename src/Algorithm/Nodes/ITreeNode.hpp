@@ -6,6 +6,7 @@
 class GALAXY_SIM_DLL_EXPORT ITreeNode
 {
 public:
+	virtual ~ITreeNode() = default;
 	virtual void reset(const Bbox& bbox) = 0;
 	virtual void startInserting() = 0;
 	virtual void appendStar(const Star& star, size_t depth = 0) = 0;

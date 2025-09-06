@@ -1,67 +1,23 @@
 #include "CudaLastTreeNode.hpp"
-#include <cuda_runtime.h>
-#include <numeric>
 
-namespace cudaTest {
-
-__global__ void computeForceCuda(Star s, Star* stars, size_t nbStars, Vec3* forces)
+CudaLastTreeNode::CudaLastTreeNode(
+	std::shared_ptr<std::mutex> mutex,
+	std::shared_ptr<std::vector<CudaLastTreeNodeFlat>> nodes,
+	const Vec3& starPos, MassMs mass): m_nodes(nodes), m_mutex(mutex)
 {
-	size_t id = threadIdx.x + blockIdx.x * blockDim.x;
-	if (id >= nbStars) return;
-	forces[id] = computeForce(s, stars[id]);
-
-	if (id >= nbStars / 2) return; // On suppose nb stars = puissance de 2
-	__syncthreads();
-	forces[id] = forces[id] + forces[nbStars / 2 + id];
-
-	// if (id > nbStars / 4) return; // On suppose nb stars = puissance de 4
-	// forces[id] = forces[id] + forces[2 * id];
-
-	return;
+	std::lock_guard<std::mutex> lock(*m_mutex.get());
+	m_nodeLastIdx = m_nodes->size();
+	m_nodeFirstIdx = m_nodeLastIdx;
+	m_nodes->push_back(CudaLastTreeNodeFlat{ starPos, mass });
 }
 
-}
-void CudaLastTreeNode::reset(const Bbox& bbox) {
-	m_stars.clear();
-	m_nbStars = 0u;
-	if (m_gpuStarsPtr != nullptr)
-	{
-		cudaFree(m_gpuStarsPtr);
-		m_gpuStarsPtr = nullptr;
-	}
-	if (m_forces != nullptr)
-	{
-		cudaFree(m_forces);
-		m_forces = nullptr;
-	}
-};
-Vec3 CudaLastTreeNode::computeTotalForce(const Star& star) const
+
+void CudaLastTreeNode::appendStar(const Star& star, size_t depth)
 {
-	if (m_nbStars < 1000)
-	{
-		return computeTotalForceWithoutCuda(star);
-	}
-
-	if (m_gpuStarsPtr == nullptr) initCUda();
-	// if (m_stars.size() > 2)
-	// {
-	// 	std::cout << m_stars.size() << std::endl;
-	// }
-
-	int threadsPerBlock = 128;
-	int blocksPerGrid = (m_nbStars + threadsPerBlock - 1) / threadsPerBlock;
-	cudaTest::computeForceCuda<<<blocksPerGrid, threadsPerBlock>>>(star, m_gpuStarsPtr, m_nbStars, m_forces);
-
-	std::vector<Vec3> forces(m_nbStars / 2);
-	cudaMemcpy(forces.data(), m_forces, m_nbStars/2 * sizeof(Vec3), cudaMemcpyDeviceToHost);
-
-	Vec3 force = std::accumulate(forces.begin(), forces.end(), Vec3(0., 0., 0.));
-	return force;
-}
-void CudaLastTreeNode::initCUda() const
-{
-	size_t sizeOfMem = m_nbStars * sizeof(Star);
-	cudaMalloc((void**)&m_gpuStarsPtr, sizeOfMem);
-	cudaMalloc((void**)&m_forces, m_nbStars *sizeof(Vec3));
-	cudaMemcpy(m_gpuStarsPtr, m_stars.data(), sizeOfMem, cudaMemcpyHostToDevice);
+	std::lock_guard<std::mutex> lock(*m_mutex.get());
+	CudaLastTreeNodeFlat& node = m_nodes->at(m_nodeLastIdx);
+	m_nodeLastIdx = m_nodes->size();
+	node.childIdx = m_nodeLastIdx;
+	//printf("add: last %i first %i\n", m_nodeLastIdx, m_nodeFirstIdx);
+	m_nodes->push_back(CudaLastTreeNodeFlat{ star.position, star.mass });
 }

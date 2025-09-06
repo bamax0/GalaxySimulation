@@ -78,7 +78,7 @@ TEST_F(SimuBench, BarnesHutOctreeCPU)
 TEST_F(SimuBench, BarnesHutSedecTreeCPU)
 {
     std::cout << "Barnes-hut (sedecTree) sur CPU" << std::endl;
-    SedecTreeNode sedec{ Bbox{} };
-    GalaxySim::BarnesHutAlgorithm alg{ &sedec };
+    SedecTreeNode* node = new SedecTreeNode(Bbox{});
+    GalaxySim::BarnesHutAlgorithm alg{ node };
     simulate(&alg);
 }

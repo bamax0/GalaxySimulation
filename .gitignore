@@ -1,3 +1,4 @@
 .vs
 build
 test_data
+external/*

@@ -15,7 +15,7 @@ namespace GalaxySim
 			m_firstNode = new FirstTreeNode<8>(static_cast<SimplifiedTreeNode<8>*>(m_rootNode));
 		}
 
-		~CudaBarnesHutAlgorithm();
+		virtual ~CudaBarnesHutAlgorithm() override;
 
 		void init(const std::vector<Star>& stars) override;
 

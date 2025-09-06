@@ -116,7 +116,7 @@ void computeAllTime()
 int main()
 {
 	//barnesHutCuda();
-	 barnesHut();
+	barnesHut();
 	// fGPU();
 	// fCPU();
 
